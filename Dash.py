@@ -284,18 +284,22 @@ for i in range(0,len(df_centroid),3):
     table.append(html.Div(rows, style={'display':'block'} ))
 
 ############################################   Графики    ##############################################################
-
 legend_color = html.Div([html.Div(['< 4,66%'],
-                                 style={'text-align': 'center', 'backgroundColor': '#fdde43', 'width': '30%',
-                                        'justify-content': 'center'}),
-                        html.Div(['4,66% - 9,33%'],
-                                 style={'text-align': 'center', 'backgroundColor': '#fdae25', 'width': '30%',
-                                        'justify-content': 'center'}),
-                        html.Div(['9,33% - 14%'],
-                                 style={'text-align': 'center', 'backgroundColor': '#fd7207', 'width': '30%',
-                                        'justify-content': 'center'})], id='color_legend')
-
-
+                                  style={'text-align': 'center',
+                                         'backgroundColor': '#fdde43',
+                                         'width': '30%',
+                                         'justify-content': 'center'}),
+                         html.Div(['4,66% - 9,33%'],
+                                  style={'text-align': 'center',
+                                         'backgroundColor': '#fdae25',
+                                         'width': '30%',
+                                         'justify-content': 'center'}),
+                         html.Div(['9,33% - 14%'],
+                                  style={'text-align': 'center',
+                                         'backgroundColor': '#fd7207',
+                                         'width': '30%',
+                                         'justify-content': 'center'})],
+                        id='color_legend')
 part_problem = 1975
 all_square = 26626
 problem_percent = int(part_problem * 100 / all_square)
@@ -303,20 +307,20 @@ trash_car = 465
 tko_out_month = 45.6
 tko_out_year = 1245
 message = 1245
-progress_bar = go.Figure(data=[go.Pie(values=[100 - problem_percent, problem_percent],
-                                      hole=0.86,
-                                      rotation=3.6 * problem_percent,
-                                      showlegend=False,
-                                      customdata=[100 - problem_percent, problem_percent],
-                                      hovertemplate='%{customdata}%<extra></extra> ',
-                                      hoverinfo='none',
-                                      textinfo='none',
-                                      marker_colors=['#eaebec', '#fbc02d'])],)
+progress_bar =  go.Figure(data=[go.Pie(values=[100 - problem_percent, problem_percent],
+                          hole=0.86,
+                          rotation=3.6 * problem_percent,
+                          showlegend=False,
+                          customdata=[100 - problem_percent, problem_percent],
+                          hovertemplate='%{customdata}%<extra></extra> ',
+                          hoverinfo='none',
+                          textinfo='none',
+                          marker_colors=['#eaebec', '#fbc02d'])],
+                         )
 progress_bar.update_layout(margin=dict(l=0, r=0, t=0, b=0), height=100, width=100,)
 
 pyLogo = Image.open(r"C:\Users\b.bulatov\PycharmProjects\Deploy_plotly\assets\trash.png")
-progress_bar.add_layout_image(dict(source=pyLogo, xref="paper", yref="paper", x=0.37, y=0.66, sizex=0.28, sizey=0.28,
-                                   sizing="stretch", opacity=0.5, layer="below"))
+progress_bar.add_layout_image(dict(source=pyLogo, xref="paper", yref="paper", x=0.37, y=0.66, sizex=0.28, sizey=0.28,sizing="stretch", opacity=0.5, layer="below"))
 progress_bar.update_traces(hoverlabel_bordercolor='#bdc2c7', hoverlabel_font_color='black',hoverlabel_font_size=12)
 
 # Текст внизу дашборда -------------------------------------------------------------------------------------------------
@@ -339,7 +343,6 @@ __8-812-213-07-10__ - дополнительный номер для прием�
 __8-812-329-17-66__ - диспетчерская служба для управляющих организаций и органов управления многоквартирными домами\n
 __8-812-305-06-65__ - клиентская служба (для юридических лиц)\n
 __004__ - прием жалоб на ненадлежащее состояние контейнерных площадок'''
-
 # Дроп даун для выбора района ------------------------------------------------------------------------------------------
 dropdown_region = dcc.Dropdown(options=[{'label': 'Все районы', 'value': 'Все районы'}] +
                                        [{'label': name, 'value': name} for name in df_centroid['Район'].sort_values(ascending=True)],
@@ -428,8 +431,7 @@ title = html.Span('ДОЛЯ ПЛОЩАДОК С ПРОБЛЕМАМИ', style={'f
 
 # Таблица с индикаторами -----------------------------------------------------------------------------------------------
 table_header = [html.Thead(html.Tr([html.Th("First Name"), html.Th("Last Name")]))]
-row1 = html.Tr(
-    [
+row1 = html.Tr([
         html.Td(dbc.Card(
             [
             dbc.CardHeader("ДОЛЯ ПЛОЩАДОК С ПРОБЛЕМАМИ", style={'font-size': '14px'}),
@@ -526,11 +528,15 @@ row2 = html.Tr([
 table_body = [html.Tbody([row1, row2], style={'Align':'flex', 'table_layout':'fixed'})]
 indicator_table = dbc.Table(table_body, bordered=False)
 
-table_with_region = html.Div([dbc.Row(table),legend_color])
+# Карта ---------------------------------------------------------------------
+table_with_region = html.Div([dbc.Row(table),legend_color], id='table_region')
+# Таблица по районам --------------------------------------------------------
+map_with_container = dcc.Graph(figure=fig_map, style={'height':700}, id = 'all_map')
+
 
 # Кнопки по ТКО --------------------------------------------------------------------------------------------------------
 bottom_TKO = html.Div([
-              html.Button('ТКО',id="btn_map",
+              html.Button('ТКО',
                          n_clicks=0,
                          className="btn_activated",
                          style={
@@ -540,7 +546,7 @@ bottom_TKO = html.Div([
                          }
                         ),
 
-              html.Button('ТКО С ПРОБЛЕМАМИ',id="btn_table",
+              html.Button('ТКО С ПРОБЛЕМАМИ',
                          n_clicks=0, className="btn",
 #                          active=False,
                          style={
@@ -559,7 +565,11 @@ bottom_TKO = html.Div([
                    #'padding-right': '20px',
                    "margin-left": "20px"
 })
-
+# Кнопки для переключения Карты и таблицы -----------------------------------------------------------------------------
+button_map_table = html.Div([
+        dbc.Button("", color="primary", className="bi bi-pin-map",  n_clicks=0, id="btn_map"),
+        dbc.Button("", color="primary", className="bi bi-table", n_clicks=0, id="btn_table")
+    ],style={'justify-content': 'end', 'display': 'flex'}, id='map_table_button__')
 ###############################################  Структура дашборда   ##################################################
 # Инициализация дашборда -----------------------------------------------------------------------------------------------
 app = Dash('test',external_stylesheets=[dbc.themes.BOOTSTRAP,  dbc.icons.BOOTSTRAP])
@@ -602,22 +612,16 @@ app.layout = html.Div(
                                                     ]
                                                 ),
                                                 dbc.Col(html.Div(
-                                                    html.Div(# Кнопки для переключения Карты и таблицы -----------------
-                                                        [
-                                                            dbc.Button("", color="primary", className="bi bi-pin-map",  n_clicks=0),
-                                                            dbc.Button("", color="primary", className="bi bi-table", n_clicks=0),
-                                                        ],
-                                                             style={'justify-content': 'end', 'display': 'flex'}, id='map_table_button__')
+                                                    button_map_table
                                                 )
                                                 ),
                                             ]
                                                     ),
-                                            dbc.Row(# Карта/таблица         id='area_map_table'-------------------------
+                                            dbc.Row(# Карта/таблица. По умолчанию в данном контейнере находится карта
                                                 [
                                                     dbc.Col(
                                                         [
-                                                            #dcc.Graph(figure=fig_map, style={'height':800}, id = 'all_map' )
-                                                            table_with_region
+                                                            map_with_container
                                                         ],  style={'height': '12%', "width": '100%', 'lign':'left'},
                                                         id='area_map_table'
                                                     )
@@ -757,10 +761,18 @@ def update_area_by_dropdown(clickData, value):
 
     return fig
 
-def swich_map_table():
-    pass
+@app.callback([Output('area_map_table', 'children')], # контейнер, где находится карта и таблица
+              [Input(f"btn_map", "n_clicks"),
+               Input(f"btn_table", "n_clicks")])
+def update_output(btn_1, btn_2):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if 'btn_map' in changed_id:
+        return [map_with_container]#[dcc.Graph(figure=fig2, config={'displayModeBar': False, 'staticPlot': False})]
+    elif 'btn_table' in changed_id:
+        return [table_with_region]#[dcc.Graph(figure=fig1, config={'displayModeBar': False, 'staticPlot': False})]
+    return dash.no_update
 
 # sm md lg xl
 if __name__ == '__main__':
     #app.run_server(host='192.168.42.40', port='8080', debug=True)
-    app.run_server(  port='8087')
+    app.run_server(port='8087')
