@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly
 from plotly.subplots import make_subplots
 import dash
+from dash import html
 from dash import dcc
 import dash_bootstrap_components as dbc
 import numpy as np
@@ -20,6 +21,7 @@ import random
 import dash
 from dash import html
 import dash_leaflet as dl
+import pandas as pd
 import geojson
 from geojson import Feature, FeatureCollection, Point
 from dash.dependencies import Output, Input
@@ -27,8 +29,6 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.graph_objs import Scattermapbox
 import mapboxgl as gj
-from dash import html
-from dash import Dash
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -44,15 +44,15 @@ df_podr['Всего контейнерных площадок'].apply(lambda x: 
 
 # График по перевозчикам (с проблемами)---------------------------------------------------------------------------------
 fig1=go.Figure()
-fig1.add_bar(x=df_podr['Всего контейнерных площадок'],
-            y=df_podr['Название'],
-            orientation='h',
-            base='relative',
-            marker_color=['#4da2f2','#ffc736','#8ad554','#d38dcc'], offsetgroup=2,
-            hovertemplate= "Всего контейнерных площадок: %{x}<extra></extra>",
-            xhoverformat='.0f',
-            text=df_podr['Всего контейнерных площадок'].apply(lambda x: "{:,}".format(x).replace(',', ' ')),
-            textposition='outside')
+fig1.add_bar(   x=df_podr['Всего контейнерных площадок'],
+                y=df_podr['Название'],
+                orientation='h',
+                base='relative',
+                marker_color=['#4da2f2','#ffc736','#8ad554','#d38dcc'], offsetgroup=2,
+                hovertemplate= "Всего контейнерных площадок: %{x}<extra></extra>",
+                xhoverformat='.0f',
+                text=df_podr['Всего контейнерных площадок'].apply(lambda x: "{:,}".format(x).replace(',', ' ')),
+                textposition='outside')
 
 fig1.update_layout( height=250,
                     margin=dict(l=10, r=10, t=10, b=10),
@@ -64,7 +64,8 @@ fig1.update_layout( height=250,
                     hoverlabel_bgcolor='#ffffff',
                     hoverlabel_bordercolor='#bdc2c7',
                     bargap=0.4,
-                    bargroupgap=0.1)
+                    bargroupgap=0.1
+)
 
 fig1.add_bar(x=df_podr['из них с проблемами'],y=df_podr['Название'],
             orientation='h', base='relative', offsetgroup=2,
@@ -73,8 +74,8 @@ fig1.add_bar(x=df_podr['из них с проблемами'],y=df_podr['Наз�
             hovertemplate= "из них с проблемами: %{x}<extra></extra>",
             text=df_podr['из них с проблемами'],
             textposition='auto')
-
 fig1.update_traces(textfont_size=14)
+
 fig1.update_xaxes(visible=False, range=[-400,13000],separatethousands=True, tickformat=",.0f")
 fig1.update_yaxes(showline = True,tickfont=dict(color='black', size=16),showspikes=False)
 
@@ -103,6 +104,7 @@ fig2.update_traces(textfont_size=14)
 fig2.update_xaxes(visible=False, range=[-400,13000],separatethousands=True)
 fig2.update_yaxes(showline = True,tickfont=dict(color='black', size=16),showspikes=False)
 
+
 ############################################### Датасет для проблем по районам #########################################
 df_trash = pd.read_excel('Проблемы.xlsx')
 df_trash['Количество'] = df_trash['Количество'].astype(int)
@@ -129,8 +131,7 @@ df_cross = df_cross.sort_values(by='order', ascending=True)
 fig_test = make_subplots(rows=9, cols=2, horizontal_spacing=0.10, shared_xaxes=True)
 legend_names = []
 
-# пробегаемся по всем районам
-for j in range(1, len(df_cross.columns) - 4):
+for j in range(1, len(df_cross.columns) - 4): # пробегаемся по всем районам
     square = df_cross.loc[~df_cross.iloc[:, j].isna(), df_cross.columns[j]].reset_index(drop=True) # данные по конкретному району
     indexies = df_cross.loc[~df_cross.iloc[:, j].isna(), df_cross.columns[j]].index.to_list()
 
@@ -211,7 +212,7 @@ fig_map = px.choropleth_mapbox(
                                 hover_name="Район",
                                 locations="Район",
                                 featureidkey="properties.NAME",
-                                center={'lat': 59.949547, 'lon': 30.304278}, # 59.949547° 30.304278°
+                                center={'lat': 59.952616475800596, 'lon': 30.351220848002722},
                                 zoom=10,
                                 custom_data=['Процент'],
                                 hover_data=["Район"]
@@ -219,12 +220,12 @@ fig_map = px.choropleth_mapbox(
 
 # Редактировнае карты
 fig_map.update_layout(
-                        height=800,
-                        margin={"r": 0, "t": 0, "l": 8.5, "b": 0},
+                        height=500,
+                        margin={"r": 0, "t": 0, "l": 0, "b": 0},
                         mapbox_style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
                         mapbox_accesstoken=TOKEN_MAPBOX,
-                        mapbox_center={'lat': 59.949547, 'lon': 30.304278},
-                        mapbox_zoom=8.5,
+                        mapbox_center={'lat': 59.952616475800596, 'lon': 30.351220848002722},
+                        mapbox_zoom=8,
                         modebar_remove=["zoom", "pan", "autoscale", "zoomout",
                                         "zoomin", "lasso", "lasso2d","resetScale2d", "select"]
                       )
@@ -254,7 +255,8 @@ fig_map.add_scattermapbox(
                         marker_color=df_centroid['color'],
                         hoverinfo='skip'
                     )
-########################### Отрисовка таблицы с проблемами по районам в процентах ######################################
+
+########################### Отрисовка таблицы с проблемами по районам в процентах #######################################
 table=[]
 for i in range(0,len(df_centroid),3):
     rows=[]
@@ -263,8 +265,7 @@ for i in range(0,len(df_centroid),3):
             html.Div([
             html.Span(df_centroid.loc[j, 'Район'],
                      style={'display':'block',
-                            'font-size': '14px'
-                            }),
+                            'font-size': '14px'}),
             html.Span(f'''{round(df_centroid.loc[j, 'Процент'])}%''',
                      style={'display':'block',
                             'text-align':'right',
@@ -272,8 +273,7 @@ for i in range(0,len(df_centroid),3):
                             })
             ],
                      style={'background-color':df_centroid.loc[j, 'color'],
-                            'width':'33.33%',
-                            'height':'110px',
+                            'width':'33.3%',
                             'display': 'inline-block',
                             "border":"0.5px black solid",
                             'padding-right': '15px',
@@ -281,21 +281,9 @@ for i in range(0,len(df_centroid),3):
                             'padding-left': '10px',
                             'padding-top': '8px'})
         )
-    table.append(html.Div(rows, style={'display':'block'} ))
+    table.append(html.Div(rows, style={'display':'block'}))
 
-############################################   Графики    ##############################################################
-
-legend_color = html.Div([html.Div(['< 4,66%'],
-                                 style={'text-align': 'center', 'backgroundColor': '#fdde43', 'width': '30%',
-                                        'justify-content': 'center'}),
-                        html.Div(['4,66% - 9,33%'],
-                                 style={'text-align': 'center', 'backgroundColor': '#fdae25', 'width': '30%',
-                                        'justify-content': 'center'}),
-                        html.Div(['9,33% - 14%'],
-                                 style={'text-align': 'center', 'backgroundColor': '#fd7207', 'width': '30%',
-                                        'justify-content': 'center'})], id='color_legend')
-
-
+######################################################################################################################
 part_problem = 1975
 all_square = 26626
 problem_percent = int(part_problem * 100 / all_square)
@@ -311,42 +299,325 @@ progress_bar = go.Figure(data=[go.Pie(values=[100 - problem_percent, problem_per
                                       hovertemplate='%{customdata}%<extra></extra> ',
                                       hoverinfo='none',
                                       textinfo='none',
-                                      marker_colors=['#eaebec', '#fbc02d'])],)
-progress_bar.update_layout(margin=dict(l=0, r=0, t=0, b=0), height=100, width=100,)
+                                      marker_colors=['#eaebec', '#fbc02d'])],
+                         )
+progress_bar.update_layout(
+
+    margin=dict(l=0, r=0, t=0, b=8),
+    height=75,
+    width=75,
+
+    # Added parameter
+)
+
+progress_bar.update_traces(hoverlabel_bordercolor='#bdc2c7',
+                           hoverlabel_font_color='black',
+                           hoverlabel_font_size=12,
+                           )
 
 pyLogo = Image.open(r"C:\Users\b.bulatov\PycharmProjects\Deploy_plotly\assets\trash.png")
-progress_bar.add_layout_image(dict(source=pyLogo, xref="paper", yref="paper", x=0.37, y=0.66, sizex=0.28, sizey=0.28,
-                                   sizing="stretch", opacity=0.5, layer="below"))
-progress_bar.update_traces(hoverlabel_bordercolor='#bdc2c7', hoverlabel_font_color='black',hoverlabel_font_size=12)
+progress_bar.add_layout_image(
+    dict(
+        source=pyLogo,
+        xref="paper",
+        yref="paper",
+        x=0.37,
+        y=0.66,
+        sizex=0.28,
+        sizey=0.28,
+        sizing="stretch",
+        opacity=0.5,
+        layer="below")
+)
 
-# Текст внизу дашборда -------------------------------------------------------------------------------------------------
+#progress_bar.show(config={'displayModeBar': False})
+
+############################################  Текст внизу дашборда #####################################################
 text1 = '''### Кто обеспечивает вывоз твердых коммунальных отходов\n
 ### в Санкт‐Петербурге?\n
 
 С 01.01.2022 в соответствии с положениями статей 24.6 и 29.1 Федерального закона от 24.06.1998 No 89-ФЗ «Об отходах производства и потребления» сбор, транспортирование, обработка, утилизация, обезвреживание и захоронение твердых коммунальных отходов, образованных на территории Санкт‐Петербурга, обеспечивает региональный оператор по обращению с ТКО – Акционерное общество «Невский экологический оператор» (далее – АО «НЭО», Региональный оператор).
 
 Статус регионального оператора по обращению с ТКО присвоен АО «НЭО» по результатам проведенного Комитетом по природопользованию, охране окружающей среды и обеспечению экологической безопасности (далее – Комитет) конкурсного отбора.'''
+
 text2 = '''### Контактные данные регионального оператора:\n
 
 Адрес клиентского сервиса: Кондратьевский пр., д. 15, корп. 3, Санкт‐Петербург, 195197 \n
 Адрес электронной почты: office@spb-neo.ru, dogovor@spb-neo.ru, dogovordop@spb-neo.ru (для заключения договоров) \n
 Почтовый адрес: ул. Арсенальная, д. 1, корп. 2, лит. А, офис 113 \n
-БЦ «Арсенальный», Санкт‐Петербург, 195009
+БЦ «Арсенальный», Санкт‐Петербург, 195009 
 '''
-text3 = '''### Телефоны горячих линий:\n
+
+text3 = '''### Телефоны горячих линий:\n  
 __8-812-303-80-90__ - клиентская служба (для физических лиц, обслуживается ЕИРЦ Петроэлектросбыт)\n
 __8-812-213-07-10__ - дополнительный номер для приема заявок на вывоз ТКО, включая крупногабаритные отходы\n
 __8-812-329-17-66__ - диспетчерская служба для управляющих организаций и органов управления многоквартирными домами\n
 __8-812-305-06-65__ - клиентская служба (для юридических лиц)\n
 __004__ - прием жалоб на ненадлежащее состояние контейнерных площадок'''
 
-# Дроп даун для выбора района ------------------------------------------------------------------------------------------
-dropdown_region = dcc.Dropdown(options=[{'label': 'Все районы', 'value': 'Все районы'}] +
-                                       [{'label': name, 'value': name} for name in df_centroid['Район'].sort_values(ascending=True)],
-                                style={'display': 'block', 'width':'83%', 'textAlign':'center'}, id='area_dropdown', placeholder="Выберите район")
+########################################################################################################################
+FONT_AWESOME = "https://use.fontawesome.com/releases/v6.1.1/css/all.css"
+app = dash.Dash(__name__,
+                external_stylesheets=[dbc.themes.BOOTSTRAP, FONT_AWESOME],
+               )
+app.layout = html.Div([
 
-# Три кнопки со ссылками -----------------------------------------------------------------------------------------------
-button_URL = html.Div([
+    html.Div([
+        html.H1('Вывоз мусора с контейнерных площадок по состоянию на 02.03.2022',
+                style={'font-size': '24px', 'font-family': 'Roboto, sans-serif'},
+                id='inner_title'),
+        html.Div([
+
+            html.Div([html.Span(['ДОЛЯ ПЛОЩАДОК С ПРОБЛЕМАМИ'],
+                                style={'font-size': '12px',
+                                       'color': '#323b43',
+                                       'font-family': 'Roboto, sans-serif'},
+                                id='subgrid_title1'),
+
+                      dcc.Graph(figure=progress_bar,
+                                config={'displayModeBar': False, 'staticPlot': False},
+                                id="progress_bar1"),
+
+                      html.Div([f"{'{:,}'.format(problem_percent).replace(',', ' ')}%"],
+                                style={'font-size': '40px','color': '#ffc736'},
+                                id='percent'),
+
+                      html.Div([
+                          html.Span(f"{'{:,}'.format(part_problem).replace(',', ' ')}/ ",
+                                    style={'font-size': '18px',
+                                           'color': '#ffc736'}),
+
+                          html.Span(f"{'{:,}'.format(all_square).replace(',', ' ')}",
+                                    style={'font-size': '18px',
+                                           'color': '#323b43'})],
+                          id='part_problem_down')
+
+                      ], className='part_problem'),
+
+            html.Div([
+                html.Span(['МЕСТА НАКОПЛЕНИЯ ТКО'],
+                          style={'font-size': '12px',
+                                 'color': '#323b43',
+                                 'font-family': 'Roboto, sans-serif'},
+                          id='subgrid_title2'),
+
+                html.Div([html.Span(f"{'{:,}'.format(all_square).replace(',', ' ')}",
+                                    style={'font-size': '40px',
+                                           'color': '#323b43'}),
+
+                          html.Span(f"/ {'{:,}'.format(part_problem).replace(',', ' ')}",
+                                    style={'font-size': '20px',
+                                           'color': '#323b43'})],
+                         id='place_tko_top'),
+
+                html.Span('ВСЕГО / ЗАНЯТО', id='place_tko_down',
+                          style={'justify-content': 'top',
+                                 'text-align': 'top',
+                                 'font-size': '12px',
+                                 'color': '#323b43',
+                                 'font-family': 'Roboto, sans-serif'})],
+                className='tko_place'),
+
+            html.Div([
+                html.Span(['МУСОРОВОЗОВ НА ЛИНИИ'],
+                          style={'font-size': '12px',
+                                 'color': '#323b43',
+                                 'font-family': 'Roboto, sans-serif'},
+                          id='subgrid_title3'),
+                html.Div([html.I(className="fa-solid fa-truck-field",
+                                 style={'color': '#757576'},
+                                 ),
+
+                          html.Span([f" {'{:,}'.format(trash_car).replace(',', ' ')}"],
+                                    style={'font-size': '40px',
+                                           'color': '#323b43'})],
+                         id='trash_car_down')
+
+            ],
+                className='trash_car'),
+
+            html.Div([html.Span(['НАКОПЛЕНИЯ ТКО С ПРОБЛЕМАМИ'],
+                                style={'font-size': '12px',
+                                       'color': '#323b43',
+                                       'font-family': 'Roboto, sans-serif'},
+                                id='subgrid_title4'),
+                      html.Div([
+                          html.Div(f"{'{:,}'.format(part_problem).replace(',', ' ')}",
+                                   style={'textAlign': 'left',
+                                          'font-size': '40px',
+                                          'color': '#ffc736'}, id='part_problem_1'),
+
+                          html.Div(f"{'{:,}'.format(all_square).replace(',', ' ')}",
+                                   style={'padding-left': '30px',
+                                          'font-size': '24px',
+                                          'color': '#323b43',
+                                          'padding-top': '15px'
+                                          })], id='problem_all'),
+
+                      dbc.Progress(value=7, color='#ffc736',
+                                   id='progress_line')],
+                     className='tko_problem'),
+
+            html.Div([
+                html.Span(['ВЫВЕЗЕНО ТКО'],
+                          style={'font-size': '12px',
+                                 'color': '#323b43',
+                                 'font-family': 'Roboto, sans-serif'},
+                          id='subgrid_title5'),
+
+                html.Div([
+                    html.Span(f"{'{:,}'.format(tko_out_month).replace(',', ' ')}",
+                              style={'font-size': '40px',
+                                     'color': '#323b43'}),
+                    html.Span(f"/ {'{:,}'.format(tko_out_year).replace(',', ' ')}",
+                              style={'font-size': '20px',
+                                     'color': '#323b43'})],
+                    id='day_month'),
+
+                html.Span('СУТКИ / МЕСЯЦ',
+                          style={'font-size': '12px',
+                                 'color': '#323b43',
+                                 'font-family': 'Roboto, sans-serif'},
+                          id='day_mont_down')],
+                className='tko_out'),
+
+            html.Div([
+                html.Span(['СООБЩЕНИЙ НА ПОРТАЛЕ'],
+                          style={'font-size': '12px',
+                                 'color': '#323b43',
+                                 'font-family': 'Roboto, sans-serif'},
+                          id='subgrid_title6'),
+                html.Div([
+                    html.I(className="fa-solid fa-envelope",
+                           style={'color': '#757576'}),
+
+                    html.Span([f" {'{:,}'.format(message).replace(',', ' ')}"],
+                              style={'font-size': '40px',
+                                     'color': '#323b43'})], id='message_icon')
+            ],
+                className='trash_message'),
+
+        ], className='inner-grid'),
+
+        html.Div([
+            html.Div([
+                html.Button('ТКО', id="btn_1",
+                            n_clicks=0,
+                            #                          active=False,
+                            className="btn_activated",
+                            style={
+                                'align-text': 'center',
+                                'align-items': 'center',
+                                'width': '50%'
+                            }
+                            ),
+
+                html.Button('ТКО С ПРОБЛЕМАМИ', id="btn_2",
+                            n_clicks=0,
+                            className="btn",
+                            style={
+                                'align-text': 'center',
+                                'align-items': 'center',
+                                'width': '50%'
+                            }
+                            )],
+                id="button",
+                style={
+                    'justify-content': 'center',
+                    'align-items': 'center',
+                    "width": "90%",
+                    "margin-left": "20px",
+                    "margin-bottom": "5px",
+                    "margin-right": "20px",
+                    'padding-top': '20px',
+                    'padding-right': '20px',
+                    "margin-left": "20px"}
+            ),
+
+            html.H2('Количество мест накопления ТКО АО "Невский экологический оператор"',
+                    style={'font-size': '18px', 'padding-top': '20px', "margin-left": "20px", "margin-left": "20px"}),
+
+            html.Div([dcc.Graph(figure=fig2,
+                                config={'displayModeBar': False,
+                                        'staticPlot': False})],id='graph_chainging')
+
+        ], id='graph1_button', style={"display": 'block',
+                                      'justify-content': 'center'})],
+           className='left_top'),
+
+    html.Div([
+
+        dcc.Graph(figure=fig_test, animate=True,
+                  config={'displayModeBar': False,
+                          'staticPlot': False},
+                  style={"width": '100%',
+                         'align-items': 'center',
+                         'justify-content': 'center',
+                         "margin-top": "15px",
+                         "margin-right": "auto"
+                         })], id='graph'),
+
+    html.Div([html.H2('Количество мест накопления ТКО АО "Невский экологический оператор"', id='title_map',
+                      style={'font-size': '18px', 'padding-bottom': '20px', 'padding-top': '20px',
+                             "margin-left": "20px", "margin-left": "20px"}),
+
+              dcc.Dropdown(
+                  options=[{'label': 'Все районы', 'value': 'Все районы'}] + [{'label': name, 'value': name} for name in
+                                                                              df_centroid['Район'].sort_values(
+                                                                                  ascending=True)],
+                  style={'padding-left': '10px', 'display': 'block'}, id='area_dropdown', placeholder="Выберите район"),
+              html.Div([html.Button(html.I(className="fa-solid fa-map-location-dot"),
+                                    style={'justify-content': 'center'},
+                                    n_clicks=0, id='map_button', className='btn_activated'),
+                        html.Button(html.I(className="fa-solid fa-table"),
+                                    n_clicks=0, id='table_button', style={'justify-content': 'center'},
+                                    className='btn')],
+                       style={'justify-content': 'right', 'display': 'flex'}, id='map_table_button'),
+
+              html.Div([
+
+                  dcc.Graph(figure=fig_map, id='all',config={'displayModeBar': False, 'staticPlot': False})], id="part",
+
+                  style={"width": '100%',
+                         #                "border": "0.5px solid #CCD1D1",
+                         'backgroundColor': '#ffffff',
+                         'padding-left': '10px',
+                         'padding-right': '10px',
+                         'padding-top': '10px',
+                         'align-items': 'center',
+                         'justify-content': 'center',
+                         "margin-left": "20px",
+                         "margin-right": "auto"
+                         }
+              ),
+              html.Div([html.Div(['< 4,66%'],
+                                 style={'text-align': 'center', 'backgroundColor': '#fdde43', 'width': '30%',
+                                        'justify-content': 'center'}),
+                        html.Div(['4,66% - 9,33%'],
+                                 style={'text-align': 'center', 'backgroundColor': '#fdae25', 'width': '30%',
+                                        'justify-content': 'center'}),
+                        html.Div(['9,33% - 14%'],
+                                 style={'text-align': 'center', 'backgroundColor': '#fd7207', 'width': '30%',
+                                        'justify-content': 'center'})], id='color_legend')
+              ], className='div_map'),
+
+    dcc.Markdown([text1], style={'font-size': '14px',
+                                 'font-family': 'Roboto,sans-serif'},
+                 id='text1'),
+
+    dcc.Markdown([text2],
+                 style={'font-size': '14px',
+                        'font-family': 'Roboto,sans-serif',
+                        "white-space": "pre"},
+                 dedent=False,
+                 id='text2'),
+
+    dcc.Markdown(text3, style={'font-size': '14px',
+                               'font-family': 'Roboto,sans-serif'},
+                 dedent=False,
+                 id='text3'),
+
+    html.Div([
         html.Div(
             [dbc.Button("Официальный сайт регионального оператора",
 
@@ -368,7 +639,7 @@ button_URL = html.Div([
                 "margin-right": "auto",
                 "display": "flex"
 
-            }, id='button_3_test'),
+            }, id='button_3'),
 
         html.Div(
             [dbc.Button("Графики вывоза ТКО с контейнерных площадок",
@@ -392,7 +663,7 @@ button_URL = html.Div([
 
                 "display": "flex"
 
-            }, id='button_2_test'),
+            }, id='button_2'),
 
         html.Div(
             [dbc.Button(
@@ -419,260 +690,89 @@ button_URL = html.Div([
 
                 "display": "flex"
 
-            }, id='button_1_test'),
-    ], id='buttons_link_test')
+            }, id='button_1'),
+    ], id='buttons_link')
 
-# Значения показателей и заголовки для индикаторов ---------------------------------------------------------------------
-precent = dcc.Markdown('7%', style={'textAlign': 'start', 'font-size': '40px', "verticalAlign": "down"})
-title = html.Span('ДОЛЯ ПЛОЩАДОК С ПРОБЛЕМАМИ', style={'font-size':'14px','font-family':'Roboto','textAlign': 'start'})
-
-# Таблица с индикаторами -----------------------------------------------------------------------------------------------
-table_header = [html.Thead(html.Tr([html.Th("First Name"), html.Th("Last Name")]))]
-row1 = html.Tr(
-    [
-        html.Td(dbc.Card(
-            [
-            dbc.CardHeader("ДОЛЯ ПЛОЩАДОК С ПРОБЛЕМАМИ", style={'font-size': '14px'}),
-            dbc.CardBody(
-                [
-                    dbc.Row(
-                        [
-                            dbc.Col(html.Div(
-                                    dcc.Graph(figure=progress_bar, config={'displayModeBar':False, 'staticPlot':False})
-                                )
-                                        ),
-                                dbc.Col([html.Div(precent, style={'margin-top': 0, 'margin-bottom': 0, 'margin-left': 0 }),
-                                         dcc.Markdown('1975/ **26626**', style={'textAlign': 'top', 'font-size': '15px',"verticalAlign": "top"})])
-                            ],  style={'justify' : 'center'}
-                        )
-                    ]
-                )
-            ]
-        ), style={"height": "10rem"}
-        ),
-    html.Td(dbc.Card(
-            [
-                dbc.CardHeader("МЕСТА НАКОПЛЕНИЯ ТКО", style={'font-size': '14px'}),
-                dbc.CardBody(
-                    [
-                        html.Span(dcc.Markdown('**26626**/ 1975'), style={'font-size': '40px', 'font-family': 'Roboto'}),
-                        html.Span(dcc.Markdown('ВСЕГО/ ЗАНЯТО'), style={'font-size': '15px', 'margin-top': 0, 'font-family': 'Roboto'}),
-                    ]
-                )
-            ]
-        ), style={"height": "10rem"}
-                    ),
-        html.Td(dbc.Card(
-            [
-                dbc.CardHeader("МЕСТА НАКОПЛЕНИЯ ТКО", style={'font-size': '14px'}),
-                dbc.CardBody(
-                    [
-                        html.Span(dcc.Markdown('**26626**/ 1975'),
-                                  style={'font-size': '40px', 'font-family': 'Roboto'}),
-                        html.Span(dcc.Markdown('ВСЕГО/ ЗАНЯТО'),
-                                  style={'font-size': '15px', 'margin-top': 0, 'font-family': 'Roboto'}),
-                    ]
-                )
-            ]
-        ), style={"height": "10rem"}
-        ),
-])
-row2 = html.Tr([
-        html.Td(dbc.Card([
-            dbc.CardHeader("НАКОПЛЕНИЯ ТКО С ПРОБЛЕМАМИ", style={'font-size': '14px'}),
-            dbc.CardBody(
-                [
-                    dbc.Row(
-                        dbc.Col(
-                            dbc.Row(
-                            [
-                                dbc.Col(html.Span('1975', style={'font-size': '40px', 'font-family': 'Roboto','display': 'inline-block', 'vertical-align': 'down','margin-top': '-1.9vw'})),
-                                dbc.Col(html.Span('26626', style={'font-size': '25px', 'font-family': 'Roboto','vertical-align': 'down', 'textAlign': 'end','display': 'inline-block', 'margin-top': '-1.9vw'}))
-                            ]
-                            )
-                        )
-                    ),
-                    dbc.Progress(value=7, color='#ffc736', id='progress_line'),
-                ]
-            )
-        ], style={"height": "11rem"})
-        ),
-    html.Td(dbc.Card(
-        [
-            dbc.CardHeader("ВЫВЕЗЕНО ТКО", style={'font-size': '14px'}),
-            dbc.CardBody(
-                [
-                    html.Span(dcc.Markdown('**45.6**/ 1245'),
-                              style={'font-size': '40px', 'font-family': 'Roboto'}),
-                    html.Span(dcc.Markdown('ВСЕГО/ ЗАНЯТО'),
-                              style={'font-size': '15px', 'margin-top': 0, 'font-family': 'Roboto'}),
-                ]
-            )
-        ]
-    ), style={"height": "10rem"}
-    ),
-    html.Td(dbc.Card(
-        [
-            dbc.CardHeader("СООБЩЕНИЙ НА ПОРТАЛЕ", style={'font-size': '14px'}),
-            dbc.CardBody(
-                [
-                    html.Span(dcc.Markdown('1245'), style={'font-size': '25px'}),
-                ]
-            )
-        ], style={"height": "11rem"}
-    )
-    )
-])
-table_body = [html.Tbody([row1, row2], style={'Align':'flex', 'table_layout':'fixed'})]
-indicator_table = dbc.Table(table_body, bordered=False)
-
-table_with_region = html.Div([dbc.Row(table),legend_color])
-
-# Кнопки по ТКО --------------------------------------------------------------------------------------------------------
-bottom_TKO = html.Div([
-              html.Button('ТКО',id="btn_map",
-                         n_clicks=0,
-                         className="btn_activated",
-                         style={
-                             'align-text': 'center',
-                             'align-items': 'center',
-                             'width':'50%'
-                         }
-                        ),
-
-              html.Button('ТКО С ПРОБЛЕМАМИ',id="btn_table",
-                         n_clicks=0, className="btn",
-#                          active=False,
-                         style={
-                             'align-text': 'center',
-                             'align-items': 'center',
-                             'width':'50%'
-                         }
-                        )],id="button1",style={
-                   'justify-content': 'center',
-                  'align-items': 'center',
-                   #"width": "80%",
-                 #  "margin-left": "20px",
-                  # "margin-bottom": "5px",
-                  # "margin-right": "120px",
-                   #'padding-top': '20px',
-                   #'padding-right': '20px',
-                   "margin-left": "20px"
-})
-
-###############################################  Структура дашборда   ##################################################
-# Инициализация дашборда -----------------------------------------------------------------------------------------------
-app = Dash('test',external_stylesheets=[dbc.themes.BOOTSTRAP,  dbc.icons.BOOTSTRAP])
-app.layout = html.Div(
-                    [
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    [
-                                        html.H1('Вывоз мусора с контейнерных площадок по состоянию на 02.03.2022',
-                                                style={'textAlign':'center', 'font-family': 'Roboto', 'fontSize':'24px'}),
-
-                                        indicator_table,
-
-                                        # Кнопки ТКО/ТКО с проблемами---------------------------------------------------
-                                        dbc.Row(
-                                            [
-                                                bottom_TKO
-                                            ]
-                                        ),
-                                        # График ТКО по операторам -----------------------------------------------------
-                                        dbc.Container(
-                                            [
-                                                dcc.Graph(figure=fig1, config={'displayModeBar': False,'staticPlot': False})
-                                            ]
-                                        )
-                                    ], sm=12,  md=12,  lg=6,  xl=6
-                                ), # -----------------------------------------------------------------------------------
-                                dbc.Col(
-                                    dbc.Row(
-                                        [
-                                            html.H1('Количество мест накопления ТКО АО "Невский экологический оператор"',
-                                                    style={'textAlign':'center', 'font-family': 'Roboto','fontSize':'24px'}),
-
-                                            dbc.Row(
-                                                [
-                                                    dbc.Col( # выпадающий список районов -------------------------------
-                                                    [
-                                                        html.Div(dropdown_region),
-                                                    ]
-                                                ),
-                                                dbc.Col(html.Div(
-                                                    html.Div(# Кнопки для переключения Карты и таблицы -----------------
-                                                        [
-                                                            dbc.Button("", color="primary", className="bi bi-pin-map",  n_clicks=0),
-                                                            dbc.Button("", color="primary", className="bi bi-table", n_clicks=0),
-                                                        ],
-                                                             style={'justify-content': 'end', 'display': 'flex'}, id='map_table_button__')
-                                                )
-                                                ),
-                                            ]
-                                                    ),
-                                            dbc.Row(# Карта/таблица         id='area_map_table'-------------------------
-                                                [
-                                                    dbc.Col(
-                                                        [
-                                                            #dcc.Graph(figure=fig_map, style={'height':800}, id = 'all_map' )
-                                                            table_with_region
-                                                        ],  style={'height': '12%', "width": '100%', 'lign':'left'},
-                                                        id='area_map_table'
-                                                    )
-
-                                                ]
-                                            )
-                                        ]
-                                    ), sm=12,  md=12,  lg=6,  xl=6
-                                )
-                                ]
-                        ),
-                        dbc.Row(# Большой график по всем районам--------------------------------------------------------
-                            [
-                                dcc.Graph(figure=fig_test)
-                            ]
-                        ),
-                        dbc.Row(
-                            [ # Текстовая информация в нижней части дашборда -------------------------------------------
-                                dbc.Col(
-                                    [
-                                        dcc.Markdown(text1),
-                                        dcc.Markdown(text2)
-                                    ]
-                                ),
-                                dbc.Col(
-                                    [
-                                        dcc.Markdown(text3),
-                                        button_URL # три кнопки с ссылками в самом низу дашборда------------------------
-
-                                    ]
-                                )
-                            ]
-                        ),
-                    ]
+],
+    className='container-grid2'
 )
-############################################ Обратный вызов ############################################################
-# Управление картой (выпадающий список и нажатие на нужный район) ------------------------------------------------------
 
-# Обновление drop_dawn по клику
-@app.callback( Output('area_dropdown', 'value'),
-               Input('all_map', 'clickData'))
-def update_label_dropdown(clickData):
-    if not isinstance(clickData, type(None)):
-        area_name = clickData['points'][0]['customdata'][1]
-        return area_name
 
-# Обновление карты по drop_dawn
-@app.callback(Output('all_map', 'figure'), # all_map - id графического объекта с картой
-               [Input('all_map', 'clickData'), # drop_down - id выпадающего списка
-                Input('area_dropdown', 'value')])
+@app.callback(
+    Output("area_dropdown", 'style'),
+    [Input("table_button", "n_clicks"),
+     Input("map_button", "n_clicks")]
+
+)
+def hide_dropdown(table_button, map_dropdown):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if 'table_button' in changed_id:
+        return {'display': 'none'}
+    elif 'map_button' in changed_id:
+        return {'display': 'block'}
+    return dash.no_update
+
+
+@app.callback(
+    [Output(f"{i}", "className") for i in ['table_button', 'map_button']],
+    [Input(f"{i}", "n_clicks") for i in ['table_button', 'map_button']])
+
+
+def set_active(*args):
+    ctx = dash.callback_context
+    if not ctx.triggered or not any(args):
+        return ["btn", "btn_activated"]
+    # get id of triggering button
+    button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    return ["btn_activated" if button_id == f"{i}" else "btn" for i in ['table_button', 'map_button']]
+
+
+@app.callback(
+    # [Output(f"btn_{i}", "className") for i in range(1, 3)]
+    [Output("graph_chainging", 'children')],
+    [Input(f"btn_{i}", "n_clicks") for i in range(1, 3)]
+
+)
+def update_output(btn_1, btn_2):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if 'btn_1' in changed_id:
+        return [dcc.Graph(figure=fig2,
+                          config={'displayModeBar': False,
+                                  'staticPlot': False})]
+
+    elif 'btn_2' in changed_id:
+        return [dcc.Graph(figure=fig1,
+                          config={'displayModeBar': False,
+                                  'staticPlot': False})]
+    return dash.no_update
+
+
+@app.callback(
+    [Output(f"btn_{i}", "className") for i in range(1, 3)],
+    [Input(f"btn_{i}", "n_clicks") for i in range(1, 3)])
+
+def set_active(*args):
+    ctx = dash.callback_context
+
+    if not ctx.triggered or not any(args):
+        return ["btn_activated", "btn"]
+
+    # get id of triggering button
+    button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    return [
+        "btn_activated" if button_id == f"btn_{i}" else "btn" for i in range(1, 3)
+    ]
+
+
+@app.callback(
+    Output('all', 'figure'),
+    [Input('all', 'clickData'),
+     Input('area_dropdown', 'value')]
+)
+
 def update_area_by_dropdown(clickData, value):
-    if value is None:
-        area_name = clickData['points'][0]['customdata'][1]
     area_name = value
-    # area_name = clickData[0]custom_data[1]
     fig = px.choropleth_mapbox(df,
                                geojson=geo_json,
                                opacity=0.2,
@@ -695,8 +795,8 @@ def update_area_by_dropdown(clickData, value):
                       colorscale=[[0, '#67645c'], [1, '#67645c']],
                       hovertemplate='Район: <b>%{location}</b> <br>Доля площадок с проблемами: <b>%{customdata[0]} %</b> <br>'
                       )
-    # Если выбран какой-то определенный район --------------------------------------------------------------------------
-    if area_name in df_centroid['Район'].unique().tolist():
+
+    if area_name != 'Все районы':
         fig.add_trace(
             go.Scattermapbox(lat=df.loc[df['Район'] == area_name, 'Долгота'].apply(lambda x: str(x)).to_list(),
                              lon=df.loc[df['Район'] == area_name, 'Широта'].apply(lambda x: str(x)).to_list(),
@@ -710,20 +810,21 @@ def update_area_by_dropdown(clickData, value):
                              marker={'size': 7, 'color': df.loc[df['Район'] == area_name, 'Цвет']}
                              ))
 
-        fig.update_layout(
-            mapbox=dict(style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
-                        accesstoken=TOKEN_MAPBOX,
-                        bearing=0,
-                        center=dict(lat=df_centroid.loc[df_centroid['Район'] == area_name, 'lat'].values[0],
-                                    lon=df_centroid.loc[df_centroid['Район'] == area_name, 'lon'].values[0]),
-                        pitch=0,
-                        zoom=10.5)
-        )
+        fig.update_layout(#height=500,
+                          mapbox=dict(style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
+                          accesstoken=TOKEN_MAPBOX,
+                          bearing=0,
+                          center=dict(lat=df_centroid.loc[df_centroid['Район'] == area_name, 'lat'].values[0],
+                                      lon=df_centroid.loc[df_centroid['Район'] == area_name, 'lon'].values[0]),
+                          pitch=0,
+                          zoom=10.5)
+                          )
 
     elif area_name == 'Все районы':
         fig.add_trace(go.Scattermapbox(lat=df['Долгота'].apply(lambda x: str(x)).to_list(),
                                        lon=df['Широта'].apply(lambda x: str(x)).to_list(),
                                        mode='markers',
+
                                        customdata=df[['С проблемой', 'Район', 'Адрес', 'Перевозчик']],
                                        hovertemplate='<b>С проблемой</b>: %{customdata[0]}<br>' +
                                                      '<b>Район</b>: %{customdata[1]}<br>' +
@@ -732,14 +833,15 @@ def update_area_by_dropdown(clickData, value):
                                        marker={'size': 7, 'color': df['Цвет']}
                                        ))
 
-        fig.update_layout(mapbox=dict(style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
+        fig.update_layout(height=500, mapbox=dict(style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
                                                   accesstoken=TOKEN_MAPBOX,
                                                   bearing=0,
                                                   center=dict(lat=59.952616475800596, lon=30.351220848002722),
                                                   pitch=0,
                                                   zoom=8))
+    else:
+        return fig_map
 
-    # Карта по умолчанию -----------------------------------------------------------------------------------------------
     fig.add_scattermapbox(
         below="''",
         customdata=df_centroid['Район'],
@@ -753,14 +855,102 @@ def update_area_by_dropdown(clickData, value):
         marker_color=df_centroid['color'],
         hoverinfo='skip'
     )
-    fig.update_layout(showlegend=False, margin={"r": 0, "t": 0, "l": 0, "b": 0}),
 
+    fig.update_layout(showlegend=False, margin={"r": 0, "t": 0, "l": 0, "b": 0}),
     return fig
 
-def swich_map_table():
-    pass
+def update_area(clickData, value):
+    area_name = clickData['points'][0]['customdata'][1]
 
-# sm md lg xl
-if __name__ == '__main__':
-    #app.run_server(host='192.168.42.40', port='8080', debug=True)
-    app.run_server(  port='8087')
+    fig = px.choropleth_mapbox(df,
+                               geojson=geo_json,
+                               opacity=0.2,
+                               hover_name="Район",
+                               locations="Район",
+                               featureidkey="properties.NAME",
+                               center={'lat': 59.952616475800596, 'lon': 30.351220848002722},
+                               zoom=9,
+
+                               custom_data=['Процент'],
+                               hover_data=["Район"]
+                               )
+
+    fig.update_traces(hoverlabel_bordercolor='#bdc2c7',
+                      hoverlabel_bgcolor='#ffffff',
+                      hoverlabel_font_color='black',
+                      hoverlabel_font_family="Open Sans",
+                      hoverlabel_font_size=12,
+                      marker_line_color='#000000',
+                      marker_line_width=1,
+                      colorscale=[[0, '#67645c'], [1, '#67645c']],
+                      hovertemplate='Район: <b>%{location}</b> <br>Доля площадок с проблемами: <b>%{customdata[0]} %</b> <br>'
+                      )
+
+    fig.add_trace(go.Scattermapbox(lat=df.loc[df['Район'] == area_name, 'Долгота'].apply(lambda x: str(x)).to_list(),
+                                   lon=df.loc[df['Район'] == area_name, 'Широта'].apply(lambda x: str(x)).to_list(),
+                                   mode='markers',
+                                   customdata=df.loc[
+                                       df['Район'] == area_name, ['С проблемой', 'Район', 'Адрес', 'Перевозчик']],
+                                   hovertemplate='<b>С проблемой</b>: %{customdata[0]}<br>' +
+                                                 '<b>Район</b>: %{customdata[1]}<br>' +
+                                                 '<b>Адрес</b>: %{customdata[2]}<br>' +
+                                                 '<b>Перевозчик</b>: %{customdata[3]}<extra></extra>',
+                                   marker={'size': 7, 'color': df.loc[df['Район'] == area_name, 'Цвет']}
+                                   ))
+
+    fig.update_layout(height=500, mapbox=dict(style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
+                                              accesstoken=TOKEN_MAPBOX,
+                                              bearing=0,
+                                              center=dict(lat=df_centroid.loc[df_centroid['Район'] == area_name, 'lat'].values[0],
+                                                          lon=df_centroid.loc[df_centroid['Район'] == area_name, 'lon'].values[0]),
+                                              pitch=0,
+                                              zoom=10.5))
+
+    fig.add_scattermapbox(
+        below="''",
+        customdata=df_centroid['Район'],
+        lat=df_centroid['lat'],
+        lon=df_centroid['lon'],
+        mode='markers+text',
+        textposition="middle center",
+        text=df_centroid['Процент'].apply(lambda x: str(x) + ' %'),
+        textfont={'size': 13, 'color': "#2E4053", 'family': "Droid Sans"},
+        marker_size=df_centroid['Процент'].apply(lambda x: 10 + np.sqrt(x * 1000)),
+        marker_color=df_centroid['color'],
+        hoverinfo='skip'
+    )
+
+    fig.update_layout(showlegend=False, margin={"r": 0, "t": 0, "l": 0, "b": 0}),
+
+    return [dcc.Graph(figure=fig, id='all', config={'displayModeBar': False,
+                                                    'staticPlot': False},
+                      style={'display': 'block', 'padding-right': '10px'})]
+
+
+@app.callback(
+    Output('part', 'children'),
+    [Input('map_button', 'n_clicks'),
+     Input('table_button', 'n_clicks')]
+)
+def map_to_table(map_button, table_button):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+
+    if 'map_button' in changed_id:
+        return [
+            dcc.Graph(figure=fig_map, id='all',
+                      config={'displayModeBar': False,
+                              'staticPlot': False})
+        ]
+    elif 'table_button' in changed_id:
+        return [html.Div(table, style={"width": '100%','height': '500px'})]
+    else:
+        return dash.no_update
+
+@app.callback( Output('area_dropdown', 'value'),
+               Input('all', 'clickData'))
+def update_label_dropdown(clickData):
+    area_name = clickData['points'][0]['customdata'][1]
+    return area_name
+# app.run_server(debug=True, use_reloader=False)
+# app.run_server(use_reloader=False)
+app.run_server(use_reloader=False, port = '8081')
