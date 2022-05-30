@@ -736,16 +736,10 @@ def set_active(*args):
 def update_output(btn_1, btn_2):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if 'btn_1' in changed_id:
-        return [dcc.Graph(figure=fig2,
-                          config={'displayModeBar': False,
-                                  'staticPlot': False})]
-
+        return [dcc.Graph(figure=fig2, config={'displayModeBar': False, 'staticPlot': False})]
     elif 'btn_2' in changed_id:
-        return [dcc.Graph(figure=fig1,
-                          config={'displayModeBar': False,
-                                  'staticPlot': False})]
+        return [dcc.Graph(figure=fig1, config={'displayModeBar': False, 'staticPlot': False})]
     return dash.no_update
-
 
 @app.callback(
     [Output(f"btn_{i}", "className") for i in range(1, 3)],

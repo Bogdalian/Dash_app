@@ -1,3 +1,4 @@
+# imports ------------------------------------------
 import pandas as pd
 import pickle
 import plotly.express as px
@@ -29,7 +30,7 @@ from plotly.graph_objs import Scattermapbox
 import mapboxgl as gj
 from dash import html
 from dash import Dash
-
+# --------------------------------------------------
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
@@ -129,7 +130,7 @@ df_cross = df_cross.sort_values(by='order', ascending=True)
 fig_test = make_subplots(rows=9, cols=2, horizontal_spacing=0.10, shared_xaxes=True)
 legend_names = []
 
-# пробегаемся по всем районам
+# пробегаемся по всем районам ------------------------------------------------------------------------------------------
 for j in range(1, len(df_cross.columns) - 4):
     square = df_cross.loc[~df_cross.iloc[:, j].isna(), df_cross.columns[j]].reset_index(drop=True) # данные по конкретному району
     indexies = df_cross.loc[~df_cross.iloc[:, j].isna(), df_cross.columns[j]].index.to_list()
@@ -216,17 +217,15 @@ fig_map = px.choropleth_mapbox(
                                 custom_data=['Процент'],
                                 hover_data=["Район"]
                                )
-
 # Редактировнае карты
 fig_map.update_layout(
                         height=800,
-                        margin={"r": 0, "t": 0, "l": 8.5, "b": 0},
+                        margin={"r": 0, "t": 0, "l": 0, "b": 0},
                         mapbox_style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
                         mapbox_accesstoken=TOKEN_MAPBOX,
                         mapbox_center={'lat': 59.949547, 'lon': 30.304278},
                         mapbox_zoom=8.5,
-                        modebar_remove=["zoom", "pan", "autoscale", "zoomout",
-                                        "zoomin", "lasso", "lasso2d","resetScale2d", "select"]
+                        modebar_remove=["zoom", "pan", "autoscale", "zoomout", "zoomin", "lasso", "lasso2d","resetScale2d", "select"]
                       )
 
 fig_map.update_traces(
@@ -533,48 +532,23 @@ table_with_region = html.Div([dbc.Row(table),legend_color], id='table_region')
 # Таблица по районам --------------------------------------------------------
 map_with_container = dcc.Graph(figure=fig_map, style={'height':700}, id = 'all_map')
 
-
 # Кнопки по ТКО --------------------------------------------------------------------------------------------------------
-bottom_TKO = html.Div([
-              html.Button('ТКО',
-                         n_clicks=0,
-                         className="btn_activated",
-                         style={
-                             'align-text': 'center',
-                             'align-items': 'center',
-                             'width':'50%'
-                         }
-                        ),
-
-              html.Button('ТКО С ПРОБЛЕМАМИ',
-                         n_clicks=0, className="btn",
-#                          active=False,
-                         style={
-                             'align-text': 'center',
-                             'align-items': 'center',
-                             'width':'50%'
-                         }
-                        )],id="button1",style={
-                   'justify-content': 'center',
-                  'align-items': 'center',
-                   #"width": "80%",
-                 #  "margin-left": "20px",
-                  # "margin-bottom": "5px",
-                  # "margin-right": "120px",
-                   #'padding-top': '20px',
-                   #'padding-right': '20px',
-                   "margin-left": "20px"
-})
+bottom_TKO = html.Div(
+    [
+            dbc.Button('ТКО', n_clicks=0, id='tko', className="me-md-2"),
+            dbc.Button('ТКО С ПРОБЛЕМАМИ',n_clicks=0, id="problem", className="me-1")
+    ], className="d-grid gap-2 d-md-block"
+)
 # Кнопки для переключения Карты и таблицы -----------------------------------------------------------------------------
-button_map_table = html.Div([
-        dbc.Button("", color="primary", className="bi bi-pin-map",  n_clicks=0, id="btn_map"),
-        dbc.Button("", color="primary", className="bi bi-table", n_clicks=0, id="btn_table")
+button_map_table = html.Div(
+    [
+        dbc.Button("", color="primary", className="bi bi-pin-map",   id="btn_map",), # n_clicks=0
+        dbc.Button("", color="primary", className="bi bi-table", id="btn_table")
     ],style={'justify-content': 'end', 'display': 'flex'}, id='map_table_button__')
 ###############################################  Структура дашборда   ##################################################
 # Инициализация дашборда -----------------------------------------------------------------------------------------------
-app = Dash('test',external_stylesheets=[dbc.themes.BOOTSTRAP,  dbc.icons.BOOTSTRAP])
-app.layout = html.Div(
-                    [
+app = Dash('test',external_stylesheets=[dbc.icons.BOOTSTRAP, dbc.themes.BOOTSTRAP])
+app.layout = html.Div([
                         dbc.Row(
                             [
                                 dbc.Col(
@@ -587,14 +561,21 @@ app.layout = html.Div(
                                         # Кнопки ТКО/ТКО с проблемами---------------------------------------------------
                                         dbc.Row(
                                             [
-                                                bottom_TKO
-                                            ]
+                                                html.Div(bottom_TKO)
+                                            ],
+
                                         ),
                                         # График ТКО по операторам -----------------------------------------------------
                                         dbc.Container(
                                             [
-                                                dcc.Graph(figure=fig1, config={'displayModeBar': False,'staticPlot': False})
-                                            ]
+                                                dbc.Col(
+                                                    [
+                                                        dcc.Graph(figure=fig1, config={'displayModeBar': False,'staticPlot': False})
+                                                    ],
+                                                    id='tko_plot'
+                                                )
+                                            ],
+
                                         )
                                     ], sm=12,  md=12,  lg=6,  xl=6
                                 ), # -----------------------------------------------------------------------------------
@@ -655,8 +636,7 @@ app.layout = html.Div(
                                 )
                             ]
                         ),
-                    ]
-)
+                    ])
 ############################################ Обратный вызов ############################################################
 # Управление картой (выпадающий список и нажатие на нужный район) ------------------------------------------------------
 
@@ -674,7 +654,7 @@ def update_label_dropdown(clickData):
                 Input('area_dropdown', 'value')])
 def update_area_by_dropdown(clickData, value):
     if value is None:
-        area_name = clickData['points'][0]['customdata'][1]
+        return dash.no_update
     area_name = value
     # area_name = clickData[0]custom_data[1]
     fig = px.choropleth_mapbox(df,
@@ -688,7 +668,6 @@ def update_area_by_dropdown(clickData, value):
                                custom_data=['Процент'],
                                hover_data=["Район"]
                                )
-
     fig.update_traces(hoverlabel_bordercolor='#bdc2c7',
                       hoverlabel_bgcolor='#ffffff',
                       hoverlabel_font_color='black',
@@ -713,7 +692,6 @@ def update_area_by_dropdown(clickData, value):
                                            '<b>Перевозчик</b>: %{customdata[3]}<extra></extra>',
                              marker={'size': 7, 'color': df.loc[df['Район'] == area_name, 'Цвет']}
                              ))
-
         fig.update_layout(
             mapbox=dict(style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
                         accesstoken=TOKEN_MAPBOX,
@@ -723,7 +701,6 @@ def update_area_by_dropdown(clickData, value):
                         pitch=0,
                         zoom=10.5)
         )
-
     elif area_name == 'Все районы':
         fig.add_trace(go.Scattermapbox(lat=df['Долгота'].apply(lambda x: str(x)).to_list(),
                                        lon=df['Широта'].apply(lambda x: str(x)).to_list(),
@@ -735,14 +712,12 @@ def update_area_by_dropdown(clickData, value):
                                                      '<b>Перевозчик</b>: %{customdata[3]}<extra></extra>',
                                        marker={'size': 7, 'color': df['Цвет']}
                                        ))
-
         fig.update_layout(mapbox=dict(style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
                                                   accesstoken=TOKEN_MAPBOX,
                                                   bearing=0,
                                                   center=dict(lat=59.952616475800596, lon=30.351220848002722),
                                                   pitch=0,
                                                   zoom=8))
-
     # Карта по умолчанию -----------------------------------------------------------------------------------------------
     fig.add_scattermapbox(
         below="''",
@@ -758,9 +733,9 @@ def update_area_by_dropdown(clickData, value):
         hoverinfo='skip'
     )
     fig.update_layout(showlegend=False, margin={"r": 0, "t": 0, "l": 0, "b": 0}),
-
     return fig
 
+# Выбор карты или таблицы
 @app.callback([Output('area_map_table', 'children')], # контейнер, где находится карта и таблица
               [Input(f"btn_map", "n_clicks"),
                Input(f"btn_table", "n_clicks")])
@@ -770,6 +745,19 @@ def update_output(btn_1, btn_2):
         return [map_with_container]#[dcc.Graph(figure=fig2, config={'displayModeBar': False, 'staticPlot': False})]
     elif 'btn_table' in changed_id:
         return [table_with_region]#[dcc.Graph(figure=fig1, config={'displayModeBar': False, 'staticPlot': False})]
+    return dash.no_update
+
+# # Выбор графиков ТКО
+@app.callback([Output('tko_plot', 'children')], # контейнер, где находится карта и таблица
+              [Input("tko", "n_clicks"),
+               Input("problem", "n_clicks")
+               ])
+def update_output(btn_1, btn_2):
+    changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
+    if 'tko' in changed_id:
+        return [dcc.Graph(figure=fig2, config={'displayModeBar': False,'staticPlot': False})]#[dcc.Graph(figure=fig2, config={'displayModeBar': False, 'staticPlot': False})]
+    elif 'problem' in changed_id:
+        return [dcc.Graph(figure=fig1, config={'displayModeBar': False,'staticPlot': False})]#[dcc.Graph(figure=fig1, config={'displayModeBar': False, 'staticPlot': False})]
     return dash.no_update
 
 # sm md lg xl
