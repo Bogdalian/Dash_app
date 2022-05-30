@@ -212,7 +212,7 @@ fig_map = px.choropleth_mapbox(
                                 hover_name="Район",
                                 locations="Район",
                                 featureidkey="properties.NAME",
-                                center={'lat': 59.949547, 'lon': 30.304278}, # 59.949547° 30.304278°
+                                center={'lat': 59.949547, 'lon': 30.304278}, #  center={'lat': 59.949547, 'lon': 30.304278}
                                 zoom=10,
                                 custom_data=['Процент'],
                                 hover_data=["Район"]
@@ -223,7 +223,7 @@ fig_map.update_layout(
                         margin={"r": 0, "t": 0, "l": 0, "b": 0},
                         mapbox_style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
                         mapbox_accesstoken=TOKEN_MAPBOX,
-                        mapbox_center={'lat': 59.949547, 'lon': 30.304278},
+                        mapbox_center={'lat': 59.949547, 'lon': 30.304278}, #{'lat': 59.949547, 'lon': 30.304278}
                         mapbox_zoom=8.5,
                         modebar_remove=["zoom", "pan", "autoscale", "zoomout", "zoomin", "lasso", "lasso2d","resetScale2d", "select"]
                       )
@@ -283,22 +283,20 @@ for i in range(0,len(df_centroid),3):
     table.append(html.Div(rows, style={'display':'block'} ))
 
 ############################################   Графики    ##############################################################
-legend_color = html.Div([html.Div(['< 4,66%'],
-                                  style={'text-align': 'center',
-                                         'backgroundColor': '#fdde43',
-                                         'width': '30%',
-                                         'justify-content': 'center'}),
-                         html.Div(['4,66% - 9,33%'],
-                                  style={'text-align': 'center',
-                                         'backgroundColor': '#fdae25',
-                                         'width': '30%',
-                                         'justify-content': 'center'}),
-                         html.Div(['9,33% - 14%'],
-                                  style={'text-align': 'center',
-                                         'backgroundColor': '#fd7207',
-                                         'width': '30%',
-                                         'justify-content': 'center'})],
-                        id='color_legend')
+legend_color = dbc.Row([dbc.Col(['< 4,66%'],
+                                style={'text-align': 'center','backgroundColor': '#fdde43','justify-content': 'center'},
+                                width=4,
+                                align='center'),
+                         dbc.Col(['4,66% - 9,33%'],
+                                 style={'text-align': 'center','backgroundColor': '#fdae25','justify-content': 'center'},
+                                 width=4,
+                                 align='center'),
+                         dbc.Col(['9,33% - 14%'],
+                                  style={'text-align': 'center','backgroundColor': '#fd7207','justify-content': 'center'},
+                                 width=4,
+                                 align='center')
+                        ],
+                        )
 part_problem = 1975
 all_square = 26626
 problem_percent = int(part_problem * 100 / all_square)
@@ -449,7 +447,7 @@ row1 = html.Tr([
                     ]
                 )
             ]
-        ), style={"height": "10rem"}
+        ), style={'height': '100%', 'table-layout': 'fixed'}
         ),
     html.Td(dbc.Card(
             [
@@ -460,8 +458,9 @@ row1 = html.Tr([
                         html.Span(dcc.Markdown('ВСЕГО/ ЗАНЯТО'), style={'font-size': '15px', 'margin-top': 0, 'font-family': 'Roboto'}),
                     ]
                 )
-            ]
-        ), style={"height": "10rem"}
+            ],  style={'height': '100%', 'table-layout': 'fixed'}
+    ),
+        style={'height': '100%', 'table-layout': 'fixed'}
                     ),
         html.Td(dbc.Card(
             [
@@ -474,8 +473,8 @@ row1 = html.Tr([
                                   style={'font-size': '15px', 'margin-top': 0, 'font-family': 'Roboto'}),
                     ]
                 )
-            ]
-        ), style={"height": "10rem"}
+            ], style={'height': '100%', 'table-layout': 'fixed'}
+        ),  style={'height': '100%', 'table-layout': 'fixed'}
         ),
 ])
 row2 = html.Tr([
@@ -496,7 +495,8 @@ row2 = html.Tr([
                     dbc.Progress(value=7, color='#ffc736', id='progress_line'),
                 ]
             )
-        ], style={"height": "11rem"})
+        ], style={'height': '100%', 'table-layout': 'fixed'}
+        ), style={'height': '100%', 'table-layout': 'fixed'}
         ),
     html.Td(dbc.Card(
         [
@@ -509,8 +509,8 @@ row2 = html.Tr([
                               style={'font-size': '15px', 'margin-top': 0, 'font-family': 'Roboto'}),
                 ]
             )
-        ]
-    ), style={"height": "10rem"}
+        ], style={'height': '100%', 'table-layout': 'fixed'}
+    ), style={'height': '100%', 'table-layout': 'fixed'}
     ),
     html.Td(dbc.Card(
         [
@@ -520,25 +520,25 @@ row2 = html.Tr([
                     html.Span(dcc.Markdown('1245'), style={'font-size': '25px'}),
                 ]
             )
-        ], style={"height": "11rem"}
-    )
+        ], style={'height': '100%', 'table-layout': 'fixed'}
+    ),
+        style={'height': '100%', 'table-layout': 'fixed'}
     )
 ])
-table_body = [html.Tbody([row1, row2], style={'Align':'flex', 'table_layout':'fixed'})]
+table_body = [html.Tbody([row1, row2], style={'height': '100%', 'table-layout': 'fixed'})]
 indicator_table = dbc.Table(table_body, bordered=False)
 
 # Карта ---------------------------------------------------------------------
-table_with_region = html.Div([dbc.Row(table),legend_color], id='table_region')
+table_with_region = html.Div([dbc.Row(table), legend_color], id='table_region')
 # Таблица по районам --------------------------------------------------------
 map_with_container = dcc.Graph(figure=fig_map, style={'height':700}, id = 'all_map')
 
 # Кнопки по ТКО --------------------------------------------------------------------------------------------------------
-bottom_TKO = html.Div(
-    [
-            dbc.Button('ТКО', n_clicks=0, id='tko', className="me-md-2"),
-            dbc.Button('ТКО С ПРОБЛЕМАМИ',n_clicks=0, id="problem", className="me-1")
-    ], className="d-grid gap-2 d-md-block"
-)
+bottom_TKO = [
+    dbc.Col(dbc.Button('ТКО', n_clicks=0, id='tko', color="primary"), className="d-grid gap-2"),
+    dbc.Col(dbc.Button('ТКО С ПРОБЛЕМАМИ',n_clicks=0, id="problem", color="primary"), className="d-grid gap-2")
+]
+
 # Кнопки для переключения Карты и таблицы -----------------------------------------------------------------------------
 button_map_table = html.Div(
     [
@@ -559,12 +559,8 @@ app.layout = html.Div([
                                         indicator_table,
 
                                         # Кнопки ТКО/ТКО с проблемами---------------------------------------------------
-                                        dbc.Row(
-                                            [
-                                                html.Div(bottom_TKO)
-                                            ],
+                                        dbc.Row(bottom_TKO),
 
-                                        ),
                                         # График ТКО по операторам -----------------------------------------------------
                                         dbc.Container(
                                             [
@@ -663,7 +659,9 @@ def update_area_by_dropdown(clickData, value):
                                hover_name="Район",
                                locations="Район",
                                featureidkey="properties.NAME",
-                               center={'lat': 59.952616475800596, 'lon': 30.351220848002722},
+                               center={'lat': 59.949547, 'lon': 30.304278}, # {'lat': 59.952616475800596, 'lon': 30.351220848002722}
+
+
                                zoom=9,
                                custom_data=['Процент'],
                                hover_data=["Район"]
@@ -763,4 +761,4 @@ def update_output(btn_1, btn_2):
 # sm md lg xl
 if __name__ == '__main__':
     #app.run_server(host='192.168.42.40', port='8080', debug=True)
-    app.run_server(port='8087')
+    app.run_server(host='192.168.42.40')
