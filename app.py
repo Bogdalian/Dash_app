@@ -522,7 +522,7 @@ button_map_table = html.Div([
     ],style={'justify-content': 'end', 'display': 'flex'}, id='map_table_button__')
 ###############################################  Структура дашборда   ##################################################
 # Инициализация дашборда -----------------------------------------------------------------------------------------------
-app = Dash('test',external_stylesheets=[dbc.icons.BOOTSTRAP, dbc.themes.BOOTSTRAP])
+app = Dash('111',external_stylesheets=[dbc.icons.BOOTSTRAP, dbc.themes.BOOTSTRAP])
 server = app.server
 app.layout = html.Div([
                         dbc.Row(
