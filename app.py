@@ -36,7 +36,7 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
 ###################################### Датасет для графика по перевозчикам #############################################
-df_podr=pd.read_excel('Перевозчики.xlsx')
+df_podr=pd.read_excel('carriers.xlsx')
 pd.to_numeric(df_podr['Всего контейнерных площадок'])
 pd.to_numeric(df_podr.iloc[:,1])
 df_podr['sum']=df_podr.apply(lambda x: x['Всего контейнерных площадок'] + x['из них с проблемами'], axis=1)
@@ -105,7 +105,7 @@ fig2.update_xaxes(visible=False, range=[-400,13000],separatethousands=True)
 fig2.update_yaxes(showline = True,tickfont=dict(color='black', size=16),showspikes=False)
 
 ############################################### Датасет для проблем по районам #########################################
-df_trash = pd.read_excel('Проблемы.xlsx')
+df_trash = pd.read_excel('problem.xlsx')
 df_trash['Количество'] = df_trash['Количество'].astype(int)
 df_cross = pd.crosstab(df_trash['Наименование показателя'],
                        df_trash['Район'],
@@ -166,19 +166,16 @@ for j in range(1, len(df_cross.columns) - 4):
 fig_test.update_layout(height=700,
                        margin=dict(l=10, r=10, t=10, b=10),
                        paper_bgcolor='#f6f7fb',
-
                        plot_bgcolor='#f6f7fb',
                        xaxis=dict(visible=True, showspikes=False, showline=False),
                        hovermode='y unified',
-                       modebar_remove=["zoom", "pan", "autoscale", "zoomout", "zoomin",
-                                       "lasso", "lasso2d","resetScale2d", "select"],
+                       modebar_remove=["zoom", "pan", "autoscale", "zoomout", "zoomin","lasso", "lasso2d","resetScale2d", "select"],
                        dragmode=False,
                        hoverlabel_bgcolor='#ffffff',
                        hoverlabel_bordercolor='#bdc2c7',
                        bargap=0.01,
                        bargroupgap=0.01,
                        legend=dict(orientation="h", y=1.1, x=0.4, xanchor="center", traceorder="normal")
-
                        )
 fig_test.update_xaxes(visible=False, range=[-200, 3000],
                       separatethousands=True)
@@ -190,7 +187,7 @@ fig_test.update_yaxes(tickfont=dict(color='black', size=14),
 #############################################   Датасет для карты ######################################################
 TOKEN_MAPBOX = 'pk.eyJ1IjoiYm9nZGFuMTExIiwiYSI6ImNsMW43aGc4NDA5c2gzYnBnOWlza3lsemEifQ.-sas8WK5BnFBL8wEYL8PYg'
 df = pd.read_pickle('All_data_on_problem_on_region.pkl')
-df_centroid = pd.read_csv(r'C:\Users\b.bulatov\PycharmProjects\Deploy_plotly\Проценты_для_районов.csv')
+df_centroid = pd.read_csv('precent.csv')
 df_centroid['Центроид'] = df_centroid['Центроид'].apply(lambda x: eval(x))
 df_centroid[['lat', 'lon']] = pd.DataFrame(df_centroid['Центроид'].tolist(), columns=['lat', 'lon'])
 df_centroid.loc[df_centroid['Класс'] == 1, 'color'] = '#fdde43'
@@ -199,7 +196,6 @@ df_centroid.loc[df_centroid['Класс'] == 3, 'color'] = '#fd7207'
 df_centroid = df_centroid.sort_values(by='Район').reset_index(drop=True)
 df.loc[df.loc[:, 'С проблемой'] == 'нет', 'Цвет'] = '#72b246'
 df.loc[df.loc[:, 'С проблемой'] == 'да', 'Цвет'] = '#de4362'
-
 df = pd.merge(df, df_centroid[['Район', 'Процент']], how='left', on='Район')
 with open('2_5474130071532868438.json', encoding='utf-8') as f:
     geo_json = json.load(f)
@@ -283,20 +279,20 @@ for i in range(0,len(df_centroid),3):
     table.append(html.Div(rows, style={'display':'block'} ))
 
 ############################################   Графики    ##############################################################
-legend_color = dbc.Row([dbc.Col(['< 4,66%'],
-                                style={'text-align': 'center','backgroundColor': '#fdde43','justify-content': 'center'},
-                                width=4,
-                                align='center'),
-                         dbc.Col(['4,66% - 9,33%'],
-                                 style={'text-align': 'center','backgroundColor': '#fdae25','justify-content': 'center'},
-                                 width=4,
-                                 align='center'),
-                         dbc.Col(['9,33% - 14%'],
-                                  style={'text-align': 'center','backgroundColor': '#fd7207','justify-content': 'center'},
-                                 width=4,
-                                 align='center')
-                        ],
-                        )
+legend_color = dbc.Row([
+        dbc.Col(['< 4,66%'],
+        style={'text-align': 'center','backgroundColor': '#fdde43','justify-content': 'center'},
+        width=4,
+        align='center'),
+        dbc.Col(['4,66% - 9,33%'],
+         style={'text-align': 'center','backgroundColor': '#fdae25','justify-content': 'center'},
+         width=4,
+         align='center'),
+        dbc.Col(['9,33% - 14%'],
+          style={'text-align': 'center','backgroundColor': '#fd7207','justify-content': 'center'},
+         width=4,
+         align='center')
+    ])
 part_problem = 1975
 all_square = 26626
 problem_percent = int(part_problem * 100 / all_square)
@@ -312,11 +308,9 @@ progress_bar =  go.Figure(data=[go.Pie(values=[100 - problem_percent, problem_pe
                           hovertemplate='%{customdata}%<extra></extra> ',
                           hoverinfo='none',
                           textinfo='none',
-                          marker_colors=['#eaebec', '#fbc02d'])],
-                         )
+                          marker_colors=['#eaebec', '#fbc02d'])],)
 progress_bar.update_layout(margin=dict(l=0, r=0, t=0, b=0), height=100, width=100,)
-
-pyLogo = Image.open(r"C:\Users\b.bulatov\PycharmProjects\Deploy_plotly\assets\trash.png")
+pyLogo = Image.open("trash.png")
 progress_bar.add_layout_image(dict(source=pyLogo, xref="paper", yref="paper", x=0.37, y=0.66, sizex=0.28, sizey=0.28,sizing="stretch", opacity=0.5, layer="below"))
 progress_bar.update_traces(hoverlabel_bordercolor='#bdc2c7', hoverlabel_font_color='black',hoverlabel_font_size=12)
 
@@ -340,6 +334,7 @@ __8-812-213-07-10__ - дополнительный номер для прием�
 __8-812-329-17-66__ - диспетчерская служба для управляющих организаций и органов управления многоквартирными домами\n
 __8-812-305-06-65__ - клиентская служба (для юридических лиц)\n
 __004__ - прием жалоб на ненадлежащее состояние контейнерных площадок'''
+
 # Дроп даун для выбора района ------------------------------------------------------------------------------------------
 dropdown_region = dcc.Dropdown(options=[{'label': 'Все районы', 'value': 'Все районы'}] +
                                        [{'label': name, 'value': name} for name in df_centroid['Район'].sort_values(ascending=True)],
@@ -353,13 +348,13 @@ button_URL = html.Div([
                         external_link=True,
                         target='https://spb-neo.ru/',
                         href='https://spb-neo.ru/',
-                        style={"background-color": "#00acc1",
+                        style={"background-color": "#0d6efd",
                                "color": "white",
                                "border-radius": "5px",
                                "border": False,
-                               "width": "40%",
-                               "height": "100%",
-                               "fontSize": "12px"
+                               "width": "100%",
+                               "height": "50px",
+                               "fontSize": "20px"
                                })],
             style={
                 'align-items': 'left',
@@ -377,13 +372,15 @@ button_URL = html.Div([
                         href='https://spb-neo.ru/informatsiya-dlya-potrebiteley/grafik-vyvoza-tko/',
                         target='https://spb-neo.ru/informatsiya-dlya-potrebiteley/grafik-vyvoza-tko/',
                         style={
-                            "background-color": "#00acc1",
+                            "background-color": "#0d6efd",
                             "color": "white",
                             "border-radius": "5px",
                             "border": False,
-                            "width": "40%",
-                            "height": "100%",
-                            "fontSize": "12px"
+                            "width": "100%",
+                            "height": "50px",
+                            "fontSize": "20px",
+                            'justify-content': 'left',
+
                         })],
             style={
                 'padding-top': '5px',
@@ -401,13 +398,15 @@ button_URL = html.Div([
                 external_link=True,
                 href='https://gorod.gov.spb.ru/problems/add/?city_object=2&reason=250',
                 target='https://gorod.gov.spb.ru/problems/add/?city_object=2&reason=250',
-                style={"background-color": "#00acc1",
+                style={"background-color": "#0d6efd",
                        "color": "white",
                        "border-radius": "5x",
                        "border": False,
-                       "width": "40%",
-                       "height": "100%",
-                       "fontSize": "12px",
+                       "width": "100%",
+                       "height": "50px",
+                       'textAlign':'center',
+                       "fontSize": "20px",
+                        'justify-content': 'left'
                        }
             )
             ],
@@ -416,11 +415,9 @@ button_URL = html.Div([
                 'padding-top': '5px',
                 'align-items': 'right',
                 'justify-content': 'left',
-
                 "display": "flex"
-
             }, id='button_1_test'),
-    ], id='buttons_link_test')
+    ], id='buttons_link_test', style={'padding-top': '53px'})
 
 # Значения показателей и заголовки для индикаторов ---------------------------------------------------------------------
 precent = dcc.Markdown('7%', style={'textAlign': 'start', 'font-size': '40px', "verticalAlign": "down"})
@@ -517,7 +514,7 @@ row2 = html.Tr([
             dbc.CardHeader("СООБЩЕНИЙ НА ПОРТАЛЕ", style={'font-size': '14px'}),
             dbc.CardBody(
                 [
-                    html.Span(dcc.Markdown('1245'), style={'font-size': '25px'}),
+                    html.Span(dcc.Markdown('**1245**'), style={'font-size': '40px', 'textAlign':'center'}),
                 ]
             )
         ], style={'height': '100%', 'table-layout': 'fixed'}
@@ -540,14 +537,14 @@ bottom_TKO = [
 ]
 
 # Кнопки для переключения Карты и таблицы -----------------------------------------------------------------------------
-button_map_table = html.Div(
-    [
+button_map_table = html.Div([
         dbc.Button("", color="primary", className="bi bi-pin-map",   id="btn_map",), # n_clicks=0
         dbc.Button("", color="primary", className="bi bi-table", id="btn_table")
     ],style={'justify-content': 'end', 'display': 'flex'}, id='map_table_button__')
 ###############################################  Структура дашборда   ##################################################
 # Инициализация дашборда -----------------------------------------------------------------------------------------------
 app = Dash('test',external_stylesheets=[dbc.icons.BOOTSTRAP, dbc.themes.BOOTSTRAP])
+server = app.server
 app.layout = html.Div([
                         dbc.Row(
                             [
@@ -713,7 +710,7 @@ def update_area_by_dropdown(clickData, value):
         fig.update_layout(mapbox=dict(style="mapbox://styles/bogdan111/cl1uq1ejj000j14lt415jcy5w",
                                                   accesstoken=TOKEN_MAPBOX,
                                                   bearing=0,
-                                                  center=dict(lat=59.952616475800596, lon=30.351220848002722),
+                                                  center=dict(lat=59.949547, lon=30.304278), #'lat': 59.949547, 'lon': 30.304278
                                                   pitch=0,
                                                   zoom=8))
     # Карта по умолчанию -----------------------------------------------------------------------------------------------
@@ -748,8 +745,7 @@ def update_output(btn_1, btn_2):
 # # Выбор графиков ТКО
 @app.callback([Output('tko_plot', 'children')], # контейнер, где находится карта и таблица
               [Input("tko", "n_clicks"),
-               Input("problem", "n_clicks")
-               ])
+               Input("problem", "n_clicks")])
 def update_output(btn_1, btn_2):
     changed_id = [p['prop_id'] for p in dash.callback_context.triggered][0]
     if 'tko' in changed_id:
@@ -760,5 +756,4 @@ def update_output(btn_1, btn_2):
 
 # sm md lg xl
 if __name__ == '__main__':
-    #app.run_server(host='192.168.42.40', port='8080', debug=True)
-    app.run_server(host='192.168.42.40')
+    app.run_server(port='8050')
