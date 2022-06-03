@@ -1,40 +1,19 @@
 # imports ------------------------------------------
-import pandas as pd
-import pickle
-import plotly.express as px
-import plotly
-from plotly.subplots import make_subplots
+import json
 import dash
-from dash import dcc
 import dash_bootstrap_components as dbc
 import numpy as np
-import pandas_datareader as web
-from jupyter_dash import JupyterDash
-import dash_daq as daq
-import plotly.graph_objects as go
-from io import BytesIO
-from jupyter_dash import JupyterDash
-import math
-from PIL import Image
-import json
-import random
-import dash
-from dash import html
-import dash_leaflet as dl
-import geojson
-from geojson import Feature, FeatureCollection, Point
-from dash.dependencies import Output, Input
-import plotly.graph_objects as go
+import pandas as pd
 import plotly.express as px
-from plotly.graph_objs import Scattermapbox
-import mapboxgl as gj
-from dash import html
+import plotly.graph_objects as go
+from PIL import Image
 from dash import Dash
-# --------------------------------------------------
-pd.set_option('display.max_rows', 500)
-pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
+from dash import dcc
+from dash import html
+from dash.dependencies import Output, Input
+from plotly.subplots import make_subplots
 
+# --------------------------------------------------
 ###################################### Датасет для графика по перевозчикам #############################################
 df_podr=pd.read_excel('carriers.xlsx')
 pd.to_numeric(df_podr['Всего контейнерных площадок'])
